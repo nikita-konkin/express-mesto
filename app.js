@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
@@ -26,22 +25,21 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '61c87a07bb5a41f179f61226',
+    _id: '61ca13bb1690f0f6300c2edc',
   };
 
   next();
 });
 
 app.use('/users', require('./routes/users'));
-app.use('/users/me/avatar', require('./routes/users'));
-app.use('/users/me', require('./routes/users'));
-app.use('/users/:userid', require('./routes/users'));
-
 app.use('/cards', require('./routes/cards'));
-app.use('/cards/:cardId', require('./routes/cards'));
-app.use('/cards/:cardId/likes', require('./routes/cards'));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use((req, res) => {
+  res.status(404).send({
+    message: 'Страница не найдена',
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });

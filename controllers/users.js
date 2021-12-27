@@ -34,7 +34,7 @@ module.exports.getUsers = (req, res) => {
     .then((user) => res.send({
       data: user,
     }))
-    .catch(err => res.status(404).send({
+    .catch(err => res.status(500).send({
       message: err.message,
     }))
 };
@@ -42,15 +42,22 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserById = (req, res) => {
 
   User.findById(req.params.userid)
+    .orFail(() => {
+      throw new Error("NotFound");
+    })
     .then((user) => {
       res.send({
         data: user,
       })
     })
     .catch((err) => {
-      if (err.path === '_id') {
+      if (err.name === 'CastError') {
+        res.status(400).send({
+          message: "400 - Невалидный id"
+        })
+      } else if (err.name === 'NotFound') {
         res.status(404).send({
-          message: "404 — Пользователь по указанному _id не найден.",
+          message: "404 — данных по указанному _id не найдено."
         })
       } else {
         res.status(500).send({
@@ -66,28 +73,23 @@ module.exports.updateAvatar = (req, res) => {
     avatar
   } = req.body;
 
-  User.updateOne({
-      "_id": req.user._id,
-    }, {
-      "avatar": avatar,
-    })
+  User.findByIdAndUpdate(
+      req.user._id, {
+        avatar: avatar,
+      }, {
+        new: true,
+        runValidators: true
+      })
     .then((avatar) => {
-      if (!avatar.acknowledged) {
-        throw "avatarError"
-      }
       res.send({
         data: avatar,
       })
     })
     .catch((err) => {
-      if (err == 'avatarError') {
-        res.status(404).send({
-          message: "404 — Пользователь с указанным _id не найден.",
-        })
-      } else if (err.path === '_id') {
-        res.status(404).send({
-          message: "404 — Пользователь с указанным _id не найден.",
-        })
+      if (err.name === 'ValidationError') {
+        res.status(400).send({
+          message: '400 - Некорректные данные'
+        });
       } else {
         res.status(500).send({
           message: "500 — Ошибка по умолчанию.",
@@ -103,29 +105,24 @@ module.exports.updateUserProfile = (req, res) => {
     about,
   } = req.body;
 
-  User.updateMany({
-      "_id": req.user._id,
-    }, {
-      "name": name,
-      "about": about,
-    })
+  User.findByIdAndUpdate(
+      req.user._id, {
+        name: name,
+        about: about,
+      }, {
+        new: true,
+        runValidators: true
+      })
     .then((data) => {
-      if (!data.acknowledged) {
-        throw "userDataError"
-      }
       res.send({
         data: data,
       })
     })
     .catch((err) => {
-      if (err == 'userDataError') {
+      if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: "400 — Переданы некорректные данные при обновлении аватара.",
-        })
-      } else if (err.path === '_id') {
-        res.status(404).send({
-          message: "404 — Пользователь с указанным _id не найден.",
-        })
+          message: '400 - Некорректные данные',
+        });
       } else {
         res.status(500).send({
           message: "500 — Ошибка по умолчанию.",
