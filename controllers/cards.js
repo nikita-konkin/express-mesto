@@ -38,7 +38,7 @@ module.exports.getCards = (req, res) => {
     .then((cards) => res.send({
       data: cards,
     }))
-    .catch((err) => res.status(404).send({
+    .catch((err) => res.status(500).send({
       message: err.message,
     }))
 };
@@ -48,17 +48,20 @@ module.exports.delCardByid = (req, res) => {
   Card.deleteOne({
       id: req.params.cardId,
     })
+    .orFail(() => {
+      throw new Error("NotFound");
+    })
     .then((card) => {
       res.send({
         data: card,
       })
     })
     .catch((err) => {
-      if (err.path == 'likes') {
+      if (err.name === 'CastError') {
         res.status(400).send({
-          message: "400 — Переданы некорректные данные для постановки/снятии лайка.",
-        })
-      } else if (err.path === '_id') {
+          message: '400 — Переданы некорректные данные для постановки/снятии лайка.'
+        });
+      } else if (err.path === 'NotFound') {
         res.status(404).send({
           message: "404 — Карточка с указанным _id не найдена.",
         })
@@ -82,18 +85,21 @@ module.exports.likeCard = (req, res) => {
         new: true,
       },
     )
+    .orFail(() => {
+      throw new Error("NotFound");
+    })
     .then((likes) => {
       res.send({
         data: likes,
       })
     })
     .catch((err) => {
-      if (err.path == 'likes') {
+      if (err.name === 'CastError') {
         res.status(400).send({
-          message: "400 — Переданы некорректные данные для постановки/снятии лайка.",
-        })
-      } else if (err.path === '_id') {
-        res.status(400).send({
+          message: "400 — Переданы некорректные данные для постановки/снятии лайка."
+        });
+      } else if (err.path === 'NotFound') {
+        res.status(404).send({
           message: "404 — Передан несуществующий _id карточки.",
         })
       } else {
@@ -115,18 +121,21 @@ module.exports.dislikeCard = (req, res) => {
         new: true,
       },
     )
+    .orFail(() => {
+      throw new Error("NotFound");
+    })
     .then((likes) => {
       res.send({
         data: likes,
       })
     })
     .catch((err) => {
-      if (err.path == 'likes') {
+      if (err.name === 'CastError') {
         res.status(400).send({
-          message: "400 — Переданы некорректные данные для постановки/снятии лайка.",
-        })
-      } else if (err.path === '_id') {
-        res.status(400).send({
+          message: "400 — Переданы некорректные данные для постановки/снятии лайка."
+        });
+      } else if (err.path === 'NotFound') {
+        res.status(404).send({
           message: "404 — Передан несуществующий _id карточки.",
         })
       } else {
