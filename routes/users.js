@@ -4,7 +4,7 @@ const {
   getUsers,
   getUserById,
   updateAvatar,
-  updateUserProfile
+  updateUserProfile,
 } = require('../controllers/users');
 
 router.post('/', createUser);
