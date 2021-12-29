@@ -69,7 +69,6 @@ module.exports.updateAvatar = (req, res) => {
   const {
     avatar,
   } = req.body;
-
   User.findByIdAndUpdate(
     req.user._id, {
       avatar,
@@ -101,7 +100,6 @@ module.exports.updateUserProfile = (req, res) => {
     name,
     about,
   } = req.body;
-
   User.findByIdAndUpdate(
     req.user._id, {
       name,
