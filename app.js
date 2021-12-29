@@ -17,9 +17,9 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 }, (err) => {
   if (err) {
-    console.log(err);
+    console.warn(err);
   } else {
-    console.log('Connected to MongoDB');
+    console.warn('Connected to MongoDB');
   }
 });
 
@@ -41,5 +41,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
+  console.error(`App listening on port ${PORT}`);
 });
