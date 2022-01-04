@@ -4,9 +4,11 @@
   "description": "`/routes` — папка с файлами роутера  \r `/controllers` — папка с файлами контроллеров пользователя и карточки   \r `/models` — папка с файлами описания схем пользователя и карточки",
   "main": "app.js",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.1",
     "express": "^4.17.2",
-    "mongoose": "^6.1.3"
+    "mongoose": "^6.1.3",
+    "validator": "^13.7.0"
   },
   "scripts": {
     "start": "node app.js",
@@ -25,7 +27,7 @@
   },
   "homepage": "https://github.com/nikita-konkin/express-mesto#readme",
   "devDependencies": {
-    "eslint": "^5.16.0",
+    "eslint": "^8.6.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.3",
     "nodemon": "^2.0.15"
