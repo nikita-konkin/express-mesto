@@ -20,7 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/nikita-konkin/express-mesto.git"
   },
-  "author": "NIkita Konkin",
+  "author": "Nikita Konkin",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/nikita-konkin/express-mesto/issues"

@@ -10,11 +10,9 @@ module.exports = (req, res, next) => {
   const authorization = req.cookies.jwt;
 
   if (!authorization) {
-    return res
-      .status(401)
-      .send({
-        message: 'Необходима авторизация'
-      });
+    const e = new Error('401 - Необходима авторизация.');
+    e.statusCode = 401;
+    next(e);
   }
 
   const token = authorization;
@@ -24,11 +22,9 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
   } catch (err) {
-    return res
-      .status(401)
-      .send({
-        message: 'Необходима авторизация'
-      });
+    const e = new Error('401 - Необходима авторизация.');
+    e.statusCode = 401;
+    next(e);
   }
 
   req.user = payload;

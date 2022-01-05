@@ -29,7 +29,7 @@ module.exports.login = (req, res, next) => {
     })
     .then((matched) => {
       // console.log(matched.user);
-      console.log(matched);
+      // console.log(matched);
       if (!matched) {
         return Promise.reject(new Error('Неправильные почта или пароль'));
       }
@@ -89,17 +89,19 @@ module.exports.createUser = (req, res, next) => {
     });
 };
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((user) => res.send({
       data: user,
     }))
-    .catch((err) => res.status(500).send({
-      message: err.message,
-    }));
+    .catch((err) => {
+      const e = new Error(err.message);
+      e.statusCode = 500;
+      next(e);
+    })
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   let userid = req.params.userid;
   if (userid == 'me') {
     userid = req.user._id;
@@ -116,25 +118,26 @@ module.exports.getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({
-          message: '400 - Невалидный id',
-        });
+        const e = new Error('400 - Невалидный id');
+        e.statusCode = 400;
+        next(e);
       } else if (err.message === 'NotFound') {
-        res.status(404).send({
-          message: '404 — данных по указанному _id не найдено.',
-        });
+        const e = new Error('404 — данных по указанному _id не найдено.');
+        e.statusCode = 404;
+        next(e);
       } else {
-        res.status(500).send({
-          message: '500 — Ошибка по умолчанию.',
-        });
+        const e = new Error('500 — Ошибка по умолчанию.');
+        e.statusCode = 500;
+        next(e);
       }
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const {
     avatar,
   } = req.body;
+  console.log(avatar);
   User.findByIdAndUpdate(
       req.user._id, {
         avatar,
@@ -150,18 +153,18 @@ module.exports.updateAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: '400 - Некорректные данные',
-        });
+        const e = new Error(err);
+        e.statusCode = 400;
+        next(e);
       } else {
-        res.status(500).send({
-          message: '500 — Ошибка по умолчанию.',
-        });
+        const e = new Error('500 — Ошибка по умолчанию.');
+        e.statusCode = 500;
+        next(e);
       }
     });
 };
 
-module.exports.updateUserProfile = (req, res) => {
+module.exports.updateUserProfile = (req, res, next) => {
   const {
     name,
     about,
@@ -182,13 +185,13 @@ module.exports.updateUserProfile = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: '400 - Некорректные данные',
-        });
+        const e = new Error('400 - Некорректные данные');
+        e.statusCode = 400;
+        next(e);
       } else {
-        res.status(500).send({
-          message: '500 — Ошибка по умолчанию.',
-        });
+        const e = new Error('500 — Ошибка по умолчанию.');
+        e.statusCode = 500;
+        next(e);
       }
     });
 };
