@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     validate: validator.isStrongPassword,
+    select: false,
   },
 });
 

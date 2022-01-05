@@ -1,5 +1,57 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+
+const {
+  NODE_ENV,
+  JWT_SECRET
+} = process.env;
+
+module.exports.login = (req, res) => {
+  const {
+    email,
+    password,
+  } = req.body;
+
+  User.findOne({
+      email: email
+    }).select('+password')
+    .then((user) => {
+
+      if (!user) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+
+      return {
+        pass: bcrypt.compare(password, user.password),
+        user
+      };
+    })
+
+    .then((matched) => {
+      // console.log(matched.user);
+      // console.log(matched.pass);
+      if (!matched.pass) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+
+      const token = jwt.sign({
+        _id: matched.user._id
+      }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret')
+      // console.log(token);
+      res.cookie('jwt', token, {
+          maxAge: 7 * 24 * 60 * 60,
+          httpOnly: true
+        })
+        .end()
+    })
+    .catch((err) => {
+      res.status(401)
+        .send({
+          message: err.message
+        });
+    });
+}
 
 module.exports.createUser = (req, res) => {
   const {
@@ -45,7 +97,12 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.userid)
+  let userid = req.params.userid;
+  if (userid == 'me') {
+    userid = req.user._id;
+  }
+
+  User.findById(userid)
     .orFail(() => {
       throw new Error('NotFound');
     })
@@ -76,13 +133,13 @@ module.exports.updateAvatar = (req, res) => {
     avatar,
   } = req.body;
   User.findByIdAndUpdate(
-    req.user._id, {
-      avatar,
-    }, {
-      new: true,
-      runValidators: true,
-    },
-  )
+      req.user._id, {
+        avatar,
+      }, {
+        new: true,
+        runValidators: true,
+      },
+    )
     .then((avatarLink) => {
       res.send({
         data: avatarLink,
@@ -107,14 +164,14 @@ module.exports.updateUserProfile = (req, res) => {
     about,
   } = req.body;
   User.findByIdAndUpdate(
-    req.user._id, {
-      name,
-      about,
-    }, {
-      new: true,
-      runValidators: true,
-    },
-  )
+      req.user._id, {
+        name,
+        about,
+      }, {
+        new: true,
+        runValidators: true,
+      },
+    )
     .then((data) => {
       res.send({
         data,
