@@ -101,7 +101,9 @@ module.exports.likeCard = (req, res, next) => {
       },
     )
     .orFail(() => {
-      throw new Error('NotFound');
+      const e = new Error('500 — Запись не найдена.');
+      e.statusCode = 500;
+      next(e);
     })
     .then((likes) => {
       res.send({
@@ -136,7 +138,9 @@ module.exports.dislikeCard = (req, res, next) => {
       },
     )
     .orFail(() => {
-      throw new Error('NotFound');
+      const e = new Error('500 — Запись не найдена.');
+      e.statusCode = 500;
+      next(e);
     })
     .then((likes) => {
       res.send({

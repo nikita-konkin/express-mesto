@@ -28,8 +28,6 @@ module.exports.login = (req, res, next) => {
 
     })
     .then((matched) => {
-      // console.log(matched.user);
-      // console.log(matched);
       if (!matched) {
         return Promise.reject(new Error('Неправильные почта или пароль'));
       }
@@ -37,7 +35,6 @@ module.exports.login = (req, res, next) => {
       const token = jwt.sign({
         _id: req.user._id
       }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret')
-      // console.log(token);
       res.cookie('jwt', token, {
           maxAge: 7 * 24 * 60 * 60,
           httpOnly: true
@@ -109,7 +106,9 @@ module.exports.getUserById = (req, res, next) => {
 
   User.findById(userid)
     .orFail(() => {
-      throw new Error('NotFound');
+      const e = new Error('500 — Запись не найдена.');
+      e.statusCode = 500;
+      next(e);
     })
     .then((user) => {
       res.send({

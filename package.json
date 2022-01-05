@@ -4,6 +4,10 @@
   "description": "`/routes` — папка с файлами роутера  \r `/controllers` — папка с файлами контроллеров пользователя и карточки   \r `/models` — папка с файлами описания схем пользователя и карточки",
   "main": "app.js",
   "dependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "dotenv": "^10.0.0",
+    "cookie-parser": "^1.4.6",
+    "celebrate": "^15.0.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.1",
     "express": "^4.17.2",
