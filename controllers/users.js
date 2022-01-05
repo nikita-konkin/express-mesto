@@ -7,7 +7,7 @@ const {
   JWT_SECRET
 } = process.env;
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const {
     email,
     password,
@@ -22,21 +22,20 @@ module.exports.login = (req, res) => {
         return Promise.reject(new Error('Неправильные почта или пароль'));
       }
 
-      return {
-        pass: bcrypt.compare(password, user.password),
-        user
-      };
-    })
+      req.user = user
 
+      return bcrypt.compare(password, user.password)
+
+    })
     .then((matched) => {
       // console.log(matched.user);
-      // console.log(matched.pass);
-      if (!matched.pass) {
+      console.log(matched);
+      if (!matched) {
         return Promise.reject(new Error('Неправильные почта или пароль'));
       }
 
       const token = jwt.sign({
-        _id: matched.user._id
+        _id: req.user._id
       }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret')
       // console.log(token);
       res.cookie('jwt', token, {
@@ -46,14 +45,14 @@ module.exports.login = (req, res) => {
         .end()
     })
     .catch((err) => {
-      res.status(401)
-        .send({
-          message: err.message
-        });
+      const e = new Error(err.message);
+      e.statusCode = 401;
+
+      next(e);
     });
 }
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name,
     about,
@@ -75,13 +74,17 @@ module.exports.createUser = (req, res) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: '400 — Переданы некорректные данные при создании карточки.',
-        });
+        const e = new Error('400 — Переданы некорректные данные при создании карточки.');
+        e.statusCode = 400;
+        next(e);
+      } else if (err.name === "MongoServerError" && err.code === 11000) {
+        const e = new Error('409 - Пользователь уже зарегистрирован по данному email.');
+        e.statusCode = 409;
+        next(e);
       } else {
-        res.status(500).send({
-          message: '500 — Ошибка по умолчанию.',
-        });
+        const e = new Error('500 — Ошибка по умолчанию.');
+        e.statusCode = 500;
+        next(e);
       }
     });
 };

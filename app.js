@@ -48,6 +48,12 @@ app.use((req, res) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({
+    message: err.message
+  });
+});
+
 app.listen(PORT, () => {
   console.error(`App listening on port ${PORT}`);
 });

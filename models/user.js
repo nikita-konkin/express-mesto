@@ -25,12 +25,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    sparse: true,
     validate: validator.isEmail,
   },
   password: {
     type: String,
     required: true,
-    unique: true,
     validate: validator.isStrongPassword,
     select: false,
   },
