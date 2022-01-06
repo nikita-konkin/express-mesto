@@ -10,12 +10,12 @@ module.exports.createCard = (req, res, next) => {
   const owner = req.user._id;
 
   Card.create({
-      name,
-      link,
-      owner,
-      likes,
-      createdAt,
-    })
+    name,
+    link,
+    owner,
+    likes,
+    createdAt,
+  })
     .then((card) => res.send({
       data: card,
     }))
@@ -45,12 +45,10 @@ module.exports.getCards = (req, res, next) => {
 };
 
 module.exports.delCardByid = (req, res, next) => {
-  console.log(req.user._id);
-  console.log(req.params.cardId);
   Card.findOne({
-      _id: req.params.cardId,
-      // owner: req.user._id,
-    })
+    _id: req.params.cardId,
+    // owner: req.user._id,
+  })
     .orFail(() => {
       const e = new Error('404 — Запись не найдена.');
       e.statusCode = 404;
@@ -59,13 +57,13 @@ module.exports.delCardByid = (req, res, next) => {
     .then((card) => {
       if (card.owner.equals(req.user._id)) {
         Card.deleteOne({
-            _id: req.params.cardId,
-          })
-          .then((card) => {
+          _id: req.params.cardId,
+        })
+          .then((data) => {
             res.send({
-              data: card,
+              data,
             });
-          })
+          });
       } else {
         const e = new Error('403 — Запрещено.');
         e.statusCode = 403;
@@ -83,19 +81,16 @@ module.exports.delCardByid = (req, res, next) => {
         next(e);
       }
     });
-
 };
 
 module.exports.likeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-      req.params.cardId, {
-        $addToSet: {
-          likes: req.user._id,
-        },
-      }, {
-        new: true,
-      },
-    )
+  Card.findByIdAndUpdate(req.params.cardId, {
+    $addToSet: {
+      likes: req.user._id,
+    },
+  }, {
+    new: true,
+  })
     .orFail(() => {
       const e = new Error('404 — Запись не найдена.');
       e.statusCode = 404;
@@ -120,15 +115,13 @@ module.exports.likeCard = (req, res, next) => {
 };
 
 module.exports.dislikeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-      req.params.cardId, {
-        $pull: {
-          likes: req.user._id,
-        },
-      }, {
-        new: true,
-      },
-    )
+  Card.findByIdAndUpdate(req.params.cardId, {
+    $pull: {
+      likes: req.user._id,
+    },
+  }, {
+    new: true,
+  })
     .orFail(() => {
       const e = new Error('404 — Запись не найдена.');
       e.statusCode = 404;

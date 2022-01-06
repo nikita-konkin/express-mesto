@@ -5,17 +5,16 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const validator = require('validator');
 const {
-  errors
+  errors,
 } = require('celebrate');
 const {
   celebrate,
-  Joi
+  Joi,
 } = require('celebrate');
 
 const {
   login,
   createUser,
-  getUserInfo,
 } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 
@@ -34,7 +33,7 @@ app.use(bodyParser.urlencoded({
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
-}, (err) => {
+}, (err, next) => {
   if (err) {
     const e = new Error(err.message);
     e.statusCode = err.code;
@@ -53,8 +52,8 @@ app.post('/signin', celebrate({
 
 const validateURL = (value) => {
   if (!validator.isURL(value, {
-      require_protocol: true
-    })) {
+    require_protocol: true,
+  })) {
     throw new Error('Неправильный формат ссылки');
   }
   return value;
@@ -64,7 +63,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: validateURL,
+    avatar: Joi.string().custom(validateURL),
     email: Joi.string().email().required(),
     password: Joi.string().required().min(8),
   }),
@@ -82,12 +81,12 @@ app.use((req, res, next) => {
 });
 
 app.use(errors());
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const statusCode = err.statusCode || 500;
 
   const message = statusCode === 500 ? 'Server error' : err.message;
   res.status(statusCode).send({
-    message
+    message,
   });
 });
 
