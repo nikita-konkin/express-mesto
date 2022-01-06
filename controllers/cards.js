@@ -49,17 +49,17 @@ module.exports.delCardByid = (req, res, next) => {
   console.log(req.params.cardId);
   Card.findOne({
       _id: req.params.cardId,
-      owner: req.user._id,
+      // owner: req.user._id,
+    })
+    .orFail(() => {
+      const e = new Error('404 — Запись не найдена.');
+      e.statusCode = 404;
+      next(e);
     })
     .then((card) => {
-      if (card) {
+      if (card.owner.equals(req.user._id)) {
         Card.deleteOne({
             _id: req.params.cardId,
-          })
-          .orFail(() => {
-            const e = new Error('500 — Запись не найдена.');
-            e.statusCode = 500;
-            next(e);
           })
           .then((card) => {
             res.send({
@@ -76,10 +76,6 @@ module.exports.delCardByid = (req, res, next) => {
       if (err.name === 'CastError') {
         const e = new Error('400 — Переданы некорректные данные для удаления карточки.');
         e.statusCode = 400;
-        next(e);
-      } else if (err.name === 'NotFound') {
-        const e = new Error('404 — Карточка с указанным _id не найдена.');
-        e.statusCode = 404;
         next(e);
       } else {
         const e = new Error('500 — Ошибка по умолчанию.');
@@ -101,8 +97,8 @@ module.exports.likeCard = (req, res, next) => {
       },
     )
     .orFail(() => {
-      const e = new Error('500 — Запись не найдена.');
-      e.statusCode = 500;
+      const e = new Error('404 — Запись не найдена.');
+      e.statusCode = 404;
       next(e);
     })
     .then((likes) => {
@@ -114,10 +110,6 @@ module.exports.likeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         const e = new Error('400 — Переданы некорректные данные для постановки/снятии лайка.');
         e.statusCode = 400;
-        next(e);
-      } else if (err.message === 'NotFound') {
-        const e = new Error('404 — Передан несуществующий _id карточки.');
-        e.statusCode = 404;
         next(e);
       } else {
         const e = new Error('500 — Ошибка по умолчанию.');
@@ -138,8 +130,8 @@ module.exports.dislikeCard = (req, res, next) => {
       },
     )
     .orFail(() => {
-      const e = new Error('500 — Запись не найдена.');
-      e.statusCode = 500;
+      const e = new Error('404 — Запись не найдена.');
+      e.statusCode = 404;
       next(e);
     })
     .then((likes) => {
@@ -151,10 +143,6 @@ module.exports.dislikeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         const e = new Error('400 — Переданы некорректные данные для постановки/снятии лайка.');
         e.statusCode = 400;
-        next(e);
-      } else if (err.message === 'NotFound') {
-        const e = new Error('404 — Передан несуществующий _id карточки.');
-        e.statusCode = 404;
         next(e);
       } else {
         const e = new Error('500 — Ошибка по умолчанию.');

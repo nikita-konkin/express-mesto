@@ -67,14 +67,19 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => res.send({
-      data: user,
+      data: {
+        name,
+        about,
+        avatar,
+        email
+      },
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         const e = new Error('400 — Переданы некорректные данные при создании карточки.');
         e.statusCode = 400;
         next(e);
-      } else if (err.name === "MongoServerError" && err.code === 11000) {
+      } else if (err.code === 11000) {
         const e = new Error('409 - Пользователь уже зарегистрирован по данному email.');
         e.statusCode = 409;
         next(e);
@@ -136,7 +141,7 @@ module.exports.updateAvatar = (req, res, next) => {
   const {
     avatar,
   } = req.body;
-  console.log(avatar);
+
   User.findByIdAndUpdate(
       req.user._id, {
         avatar,

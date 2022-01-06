@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const validator = require('validator');
+
 const {
   celebrate,
   Joi
@@ -12,11 +14,19 @@ const {
   updateUserProfile,
 } = require('../controllers/users');
 
+const validateURL = (value) => {
+  if (!validator.isURL(value, {
+      require_protocol: true
+    })) {
+    throw new Error('Неправильный формат ссылки');
+  }
+  return value;
+};
 // router.post('/', createUser);
 router.get('/', getUsers);
 router.get('/:userid', celebrate({
   params: Joi.object().keys({
-    userid: Joi.string().required(),
+    userid: Joi.string().length(24).hex(),
   }),
 }), getUserById);
 router.patch('/me', celebrate({
@@ -27,7 +37,7 @@ router.patch('/me', celebrate({
 }), updateUserProfile);
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required(),
+    avatar: validateURL,
   }),
 }), updateAvatar);
 

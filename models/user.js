@@ -18,11 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
-      validator: function(v) {
-        urlRegex = /(http|https):\/\/\w+?([-._~:\/?#[]@!$&'()\*\+,;=])?#?/
-        return v.match(urlRegex);
-      },
-      message: props => `${props.value} is not a valid url link!`
+      validator: (v) => validator.isURL(v),
     },
   },
   email: {

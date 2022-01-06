@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const validator = require('validator');
 const {
   errors
 } = require('celebrate');
@@ -49,11 +50,21 @@ app.post('/signin', celebrate({
     password: Joi.string().required(),
   }),
 }), login);
+
+const validateURL = (value) => {
+  if (!validator.isURL(value, {
+      require_protocol: true
+    })) {
+    throw new Error('Неправильный формат ссылки');
+  }
+  return value;
+};
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().max(15),
-    about: Joi.string().max(15),
-    avatar: Joi.string(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: validateURL,
     email: Joi.string().email().required(),
     password: Joi.string().required().min(8),
   }),
@@ -64,17 +75,19 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use((req, res) => {
-  res.status(404).send({
-    message: 'Страница не найдена',
-  });
+app.use((req, res, next) => {
+  const e = new Error('Страница не найдена');
+  e.statusCode = 404;
+  next(e);
 });
 
 app.use(errors());
 app.use((err, req, res, next) => {
-  console.log(err.statusCode);
-  res.status(err.statusCode).send({
-    message: err.message
+  const statusCode = err.statusCode || 500;
+
+  const message = statusCode === 500 ? 'Server error' : err.message;
+  res.status(statusCode).send({
+    message
   });
 });
 
