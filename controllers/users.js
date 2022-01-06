@@ -38,6 +38,8 @@ module.exports.login = (req, res, next) => {
         httpOnly: true,
       })
         .end();
+
+      return res.send('cocked');
     })
     .catch((err) => {
       const e = new Error(err.message);
