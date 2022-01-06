@@ -3,7 +3,7 @@ const validator = require('validator');
 
 const {
   celebrate,
-  Joi
+  Joi,
 } = require('celebrate');
 
 const {
@@ -16,20 +16,23 @@ const {
 
 const validateURL = (value) => {
   if (!validator.isURL(value, {
-      require_protocol: true
-    })) {
+    require_protocol: true,
+  })) {
     throw new Error('Неправильный формат ссылки');
   }
   return value;
 };
 
-router.post('/', celebrate({
+router.post(
+  '/',
+  celebrate({
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
-      link: validateURL,
+      link: Joi.string().custom(validateURL).required(),
     }),
   }),
-  createCard);
+  createCard,
+);
 router.get('/', getCards);
 router.delete('/:cardId', celebrate({
   params: Joi.object().keys({
